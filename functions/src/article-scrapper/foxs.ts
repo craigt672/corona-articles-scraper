@@ -10,6 +10,8 @@ async function foxScrapper(url: string): Promise<IArticle> {
 
   await page.goto(url);
 
+  const author = await page.$eval('.author-byline span a',  author => author.textContent);
+
   const title = await page.$eval('h1',  title => title.textContent);
 
   const paragraphs = await page.$$eval('.article-body > p', 
@@ -22,7 +24,9 @@ async function foxScrapper(url: string): Promise<IArticle> {
   await browser.close();
 
   return {
+    author,
     title,
+    url,
     description,
     bodyContent: paragraphs
   }
