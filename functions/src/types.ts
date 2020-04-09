@@ -2,6 +2,8 @@ export interface IArticle {
   url: string;
   author: string | null;
   title: string | null;
-  description: string;
+  description: string | null;
   bodyContent: string[];
+  publishedAt: string | null;
+  urlToImage: string | null;
 }

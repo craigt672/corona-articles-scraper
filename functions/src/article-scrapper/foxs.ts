@@ -28,7 +28,9 @@ async function foxScrapper(url: string): Promise<IArticle> {
     title,
     url,
     description,
-    bodyContent: paragraphs
+    bodyContent: paragraphs,
+    publishedAt: null,
+    urlToImage: null
   }
 };
 
