@@ -4,7 +4,7 @@ import truncate from '../truncate';
 
 import { IArticle } from '../types';
 
-async function foxScrapper(url: string): Promise<IArticle> {
+async function cbsScrapper(url: string): Promise<IArticle> {
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
 
@@ -13,12 +13,10 @@ async function foxScrapper(url: string): Promise<IArticle> {
   
   await page.goto(url);
 
-  const author = await page.$eval('.author-byline span a',  author => author.textContent);
-
   const title = await page.$eval('h1',  title => title.textContent);
 
-  const paragraphs = await page.$$eval('.article-body > p', 
-    p => p.map(p => p.innerHTML).filter(p => !p.startsWith('<strong>')&&!p.startsWith('<a'))
+  const paragraphs = await page.$$eval('.content__body > p', 
+    p => p.map(p => p.innerHTML)
   );
 
   const sanitzedFirstBodyParagrah = paragraphs[0].replace(/<[^>]*>?/gm, '');
@@ -27,7 +25,7 @@ async function foxScrapper(url: string): Promise<IArticle> {
   await browser.close();
 
   return {
-    author,
+    author: null,
     title,
     url,
     description,
@@ -38,4 +36,4 @@ async function foxScrapper(url: string): Promise<IArticle> {
   }
 };
 
-export default foxScrapper;
+export default cbsScrapper;

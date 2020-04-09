@@ -6,6 +6,9 @@ async function nbcScrapper(url: string): Promise<IArticle> {
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
 
+  // Configure the navigation timeout
+  await page.setDefaultNavigationTimeout(0);
+  
   await page.goto(url);
 
   const author = await page.$eval('.founders-cond',  author => author.textContent);
@@ -27,7 +30,8 @@ async function nbcScrapper(url: string): Promise<IArticle> {
     description,
     bodyContent: paragraphs,
     publishedAt: null,
-    urlToImage: null
+    urlToImage: null,
+    source: null
   }
 };
 

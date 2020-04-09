@@ -6,4 +6,5 @@ export interface IArticle {
   bodyContent: string[];
   publishedAt: string | null;
   urlToImage: string | null;
+  source: any;
 }

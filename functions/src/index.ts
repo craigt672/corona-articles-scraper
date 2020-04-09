@@ -2,8 +2,13 @@ import * as functions from 'firebase-functions';
 
 import articleScrapper from './article-scrapper';
 
-export const helloWorld = functions.https.onRequest(async (request, response) => {
-  const processedFoxArticles = await articleScrapper()
+const runtimeOpts: any = {
+  timeoutSeconds: 540,
+  memory: "1GB"
+}
+
+export const helloWorld = functions.runWith(runtimeOpts).https.onRequest(async (request, response) => {
+  const processedArticles = await articleScrapper();
   
-  response.send(processedFoxArticles);
+  response.send(processedArticles);
 });
