@@ -3,6 +3,7 @@ import * as NewsAPI from 'newsapi';
 import foxScrapper from './foxs';
 import nbcScrapper from './nbc';
 import cbsScrapper from './cbs';
+import abcScrapper from './abc';
 
 import { IArticle } from '../types';
 
@@ -13,7 +14,7 @@ const newsapi = new NewsAPI(NEWS_API_KEY);
 
 async function getArticles(): Promise<any[]> {
   const { articles } = await newsapi.v2.topHeadlines({
-    sources: 'cbs-news,nbc-news,fox-news',
+    sources: 'cbs-news,nbc-news,fox-news,abc-news',
     q: NEWS_TOPIC,
     language: 'en',
   });
@@ -55,7 +56,7 @@ async function articleScrapper() {
 
   const foxBaseUrl = 'https://www.foxnews.com';
   const cbsBaseUrl = 'https://www.cbsnews.com';
-  // const abcBaseUrl = 'https://abcnews.go.com';
+  const abcBaseUrl = 'https://abcnews.go.com';
   const nbcBaseUrl = 'https://www.nbcnews.com';
 
   const pFoxArticles = articleExtractor(
@@ -76,8 +77,13 @@ async function articleScrapper() {
     cbsScrapper
   );
 
-  const pArticles = [...pFoxArticles, ...pNbcArticles, ...pCbsArticles];
-  // const pArticles = [...pCbsArticles, ...pNbcArticles];
+  const pAbsArticles = articleExtractor(
+    abcBaseUrl,
+    articleData,
+    abcScrapper
+  );
+
+  const pArticles = [...pFoxArticles, ...pNbcArticles, ...pCbsArticles, ...pAbsArticles];
   const allArticles = await Promise.all(pArticles);
 
   const sortedArticles = allArticles.sort((a, b) => {
@@ -89,7 +95,7 @@ async function articleScrapper() {
   })
 
   return {
-    elapsed: new Date().getTime() - startTime,
+    elapsed: `${(new Date().getTime() - startTime)/1000}s`,
     total: sortedArticles.length,
     articles: sortedArticles
   };
