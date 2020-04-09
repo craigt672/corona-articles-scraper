@@ -2,10 +2,12 @@ import * as NewsAPI from 'newsapi';
 
 import foxScrapper from './foxs';
 import nbcScrapper from './nbc';
-import cbsScrapper from './cbs';
+// import cbsScrapper from './cbs';
 import abcScrapper from './abc';
+// import wiredScrapper from './wired';
+// import techcrunchScrapper from './techcrunch';
 
-import { IArticle } from '../types';
+import { IArticle, IArticleExtractor } from '../types';
 
 const NEWS_TOPIC = 'coronavirus';
 const NEWS_API_KEY = '52339108ea7c4ba785ab195d44952c8e';
@@ -14,7 +16,7 @@ const newsapi = new NewsAPI(NEWS_API_KEY);
 
 async function getArticles(): Promise<any[]> {
   const { articles } = await newsapi.v2.topHeadlines({
-    sources: 'cbs-news,nbc-news,fox-news,abc-news',
+    sources: 'fox-news,abc-news,nbc-news',
     q: NEWS_TOPIC,
     language: 'en',
   });
@@ -22,15 +24,7 @@ async function getArticles(): Promise<any[]> {
   return articles;
 }
 
-// ,nbc-news,cbs-news,abc-news,fox-news
-
-interface IArticleExtractor {
-  (
-    articleBaseUrl: string,
-    articleData: any[],
-    scrapper: (url: string) => Promise<IArticle>
-  ): Promise<IArticle>[]
-}
+// 'fox-news,wired,nbc-news,techcrunch,cbs-news,abc-news',
 
 const articleExtractor: IArticleExtractor = (articleBaseUrl, articleData, scrapper) =>  {
   const filteredArticles = articleData.filter(article => {
@@ -55,9 +49,11 @@ async function articleScrapper() {
   const articleData = await getArticles();
 
   const foxBaseUrl = 'https://www.foxnews.com';
-  const cbsBaseUrl = 'https://www.cbsnews.com';
+  // const cbsBaseUrl = 'https://www.cbsnews.com';
   const abcBaseUrl = 'https://abcnews.go.com';
   const nbcBaseUrl = 'https://www.nbcnews.com';
+  // const wiredBaseUrl = 'https://www.wired.com';
+  // const techcrunchBaseUrl = 'http://techcrunch.com';
 
   const pFoxArticles = articleExtractor(
     foxBaseUrl,
@@ -71,11 +67,11 @@ async function articleScrapper() {
     nbcScrapper
   );
 
-  const pCbsArticles = articleExtractor(
-    cbsBaseUrl,
-    articleData,
-    cbsScrapper
-  );
+  // const pCbsArticles = articleExtractor(
+  //   cbsBaseUrl,
+  //   articleData,
+  //   cbsScrapper
+  // );
 
   const pAbsArticles = articleExtractor(
     abcBaseUrl,
@@ -83,7 +79,26 @@ async function articleScrapper() {
     abcScrapper
   );
 
-  const pArticles = [...pFoxArticles, ...pNbcArticles, ...pCbsArticles, ...pAbsArticles];
+  // const pWiredArticles = articleExtractor(
+  //   wiredBaseUrl,
+  //   articleData,
+  //   wiredScrapper
+  // );
+
+  // const pTechcrunchArticles = articleExtractor(
+  //   techcrunchBaseUrl,
+  //   articleData,
+  //   techcrunchScrapper
+  // );
+
+  const pArticles = [
+    ...pNbcArticles, 
+    // ...pWiredArticles,
+    // ...pTechcrunchArticles,
+    ...pFoxArticles, 
+    // ...pCbsArticles,
+    ...pAbsArticles
+  ];
   const allArticles = await Promise.all(pArticles);
 
   const sortedArticles = allArticles.sort((a, b) => {

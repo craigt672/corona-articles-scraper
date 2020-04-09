@@ -8,3 +8,11 @@ export interface IArticle {
   urlToImage: string | null;
   source: any;
 }
+
+export interface IArticleExtractor {
+  (
+    articleBaseUrl: string,
+    articleData: any[],
+    scrapper: (url: string) => Promise<IArticle>
+  ): Promise<IArticle>[]
+}
