@@ -3,7 +3,7 @@ export interface IArticle {
   author: string | null;
   title: string | null;
   description: string | null;
-  bodyContent: string[];
+  bodyContent: string[] | null;
   publishedAt: string | null;
   urlToImage: string | null;
   source: any;
