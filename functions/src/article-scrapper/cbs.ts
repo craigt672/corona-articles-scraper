@@ -5,15 +5,17 @@ import truncate from '../truncate';
 import { IArticle } from '../types';
 
 async function cbsScrapper(url: string): Promise<IArticle> {
-  const browser = await puppeteer.launch({headless: true});
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+
   const page = await browser.newPage();
 
   // Configure the navigation timeout
   await page.setDefaultNavigationTimeout(0);
   
   await page.goto(url);
-
-  const title = await page.$eval('h1',  title => title.textContent);
 
   const paragraphs = await page.$$eval('.content__body > p', 
     p => p.map(p => p.innerHTML)
@@ -26,7 +28,7 @@ async function cbsScrapper(url: string): Promise<IArticle> {
 
   return {
     author: null,
-    title,
+    title: null,
     url,
     description,
     bodyContent: paragraphs,

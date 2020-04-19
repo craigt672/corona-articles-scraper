@@ -5,7 +5,11 @@ import truncate from '../truncate';
 import { IArticle } from '../types';
 
 async function wiredScrapper(url: string): Promise<IArticle> {
-  const browser = await puppeteer.launch({headless: true});
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+
   const page = await browser.newPage();
 
   // Configure the navigation timeout
@@ -13,7 +17,7 @@ async function wiredScrapper(url: string): Promise<IArticle> {
   
   await page.goto(url);
 
-  const title = await page.$eval('h1',  title => title.textContent);
+  // const title = await page.$eval('h1',  title => title.textContent);
 
   const paragraphs = await page.$$eval('.article__body > p', 
     p => p.map(p => p.innerHTML)
@@ -26,7 +30,7 @@ async function wiredScrapper(url: string): Promise<IArticle> {
 
   return {
     author: null,
-    title,
+    title: null,
     url,
     description,
     bodyContent: paragraphs,

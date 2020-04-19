@@ -1,11 +1,12 @@
 import * as NewsAPI from 'newsapi';
+import * as dayjs from 'dayjs';
 
 import foxScrapper from './foxs';
+import cbsScrapper from './cbs';
 import nbcScrapper from './nbc';
-// import cbsScrapper from './cbs';
 import abcScrapper from './abc';
-// import wiredScrapper from './wired';
-// import techcrunchScrapper from './techcrunch';
+import wiredScrapper from './wired';
+import techcrunchScrapper from './techcrunch';
 
 import { IArticle, IArticleExtractor } from '../types';
 
@@ -14,22 +15,32 @@ const NEWS_API_KEY = '52339108ea7c4ba785ab195d44952c8e';
 
 const newsapi = new NewsAPI(NEWS_API_KEY);
 
-async function getArticles(): Promise<any[]> {
-  const { articles } = await newsapi.v2.topHeadlines({
-    sources: 'fox-news,abc-news,nbc-news',
+const dateToday = dayjs().format('YYYY-MM-DD');
+
+async function getArticlesFromSoure(source: string): Promise<any[]> {
+  const { articles } = await newsapi.v2.everything({
+    sources: source,
     q: NEWS_TOPIC,
     language: 'en',
+    from: dateToday,
+    sortBy: 'publishedAt',
   });
 
-  return articles;
-}
+  const limitArtilces = articles.slice(0, 5);
 
-// 'fox-news,wired,nbc-news,techcrunch,cbs-news,abc-news',
+  const allUrls = limitArtilces.map(a => a.url);
+  console.log('All Article Urls: ', allUrls);
+  return limitArtilces;
+}
 
 const articleExtractor: IArticleExtractor = (articleBaseUrl, articleData, scrapper) =>  {
   const filteredArticles = articleData.filter(article => {
     return article.url.startsWith(articleBaseUrl) && !article.url.includes('video');
   });
+
+  if(filteredArticles.length === 0) {
+    return [];
+  }
 
   const mappedArticles = filteredArticles.map(async (article: IArticle) => ({
     ...await scrapper(article.url),
@@ -43,77 +54,34 @@ const articleExtractor: IArticleExtractor = (articleBaseUrl, articleData, scrapp
   return mappedArticles;
 }
 
-async function articleScrapper() {
+
+async function articleScrapper(url= 'https://www.nbcnews.com', source, scrapper) {
   const startTime = new Date().getTime();
 
-  const articleData = await getArticles();
+  const articleData = await getArticlesFromSoure(source);
 
-  const foxBaseUrl = 'https://www.foxnews.com';
-  // const cbsBaseUrl = 'https://www.cbsnews.com';
-  const abcBaseUrl = 'https://abcnews.go.com';
-  const nbcBaseUrl = 'https://www.nbcnews.com';
-  // const wiredBaseUrl = 'https://www.wired.com';
-  // const techcrunchBaseUrl = 'http://techcrunch.com';
-
-  const pFoxArticles = articleExtractor(
-    foxBaseUrl,
+  const pArticles = articleExtractor(
+    url,
     articleData,
-    foxScrapper
+    scrapper
   );
-
-  const pNbcArticles = articleExtractor(
-    nbcBaseUrl,
-    articleData,
-    nbcScrapper
-  );
-
-  // const pCbsArticles = articleExtractor(
-  //   cbsBaseUrl,
-  //   articleData,
-  //   cbsScrapper
-  // );
-
-  const pAbsArticles = articleExtractor(
-    abcBaseUrl,
-    articleData,
-    abcScrapper
-  );
-
-  // const pWiredArticles = articleExtractor(
-  //   wiredBaseUrl,
-  //   articleData,
-  //   wiredScrapper
-  // );
-
-  // const pTechcrunchArticles = articleExtractor(
-  //   techcrunchBaseUrl,
-  //   articleData,
-  //   techcrunchScrapper
-  // );
-
-  const pArticles = [
-    ...pNbcArticles, 
-    // ...pWiredArticles,
-    // ...pTechcrunchArticles,
-    ...pFoxArticles, 
-    // ...pCbsArticles,
-    ...pAbsArticles
-  ];
+  
   const allArticles = await Promise.all(pArticles);
-
-  const sortedArticles = allArticles.sort((a, b) => {
-    if(a.publishedAt && b.publishedAt) {
-     const tDiff = new Date(a.publishedAt).getDate() - new Date(b.publishedAt).getDate()  
-     if (typeof tDiff === 'number') return tDiff;
-    }
-    return 0;
-  })
 
   return {
     elapsed: `${(new Date().getTime() - startTime)/1000}s`,
-    total: sortedArticles.length,
-    articles: sortedArticles
+    total: allArticles.length,
+    articles: allArticles
   };
+}
+
+export {
+  foxScrapper,
+  cbsScrapper,
+  nbcScrapper,
+  abcScrapper,
+  techcrunchScrapper,
+  wiredScrapper
 }
 
 export default articleScrapper;

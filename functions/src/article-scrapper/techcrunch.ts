@@ -5,34 +5,53 @@ import truncate from '../truncate';
 import { IArticle } from '../types';
 
 async function engadgetScrapper(url: string): Promise<IArticle> {
-  const browser = await puppeteer.launch({headless: true});
-  const page = await browser.newPage();
+  try {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
 
-  // Configure the navigation timeout
-  await page.setDefaultNavigationTimeout(0);
-  
-  await page.goto(url);
+    const page = await browser.newPage();
 
-  const title = await page.$eval('h1',  title => title.textContent);
+    // Configure the navigation timeout
+    await page.setDefaultNavigationTimeout(0);
 
-  const paragraphs = await page.$$eval('.article-content > p', 
-    p => p.map(p => p.innerHTML)
-  );
+    await page.goto(url);
 
-  const sanitzedFirstBodyParagrah = paragraphs[0].replace(/<[^>]*>?/gm, '');
-  const description = truncate(sanitzedFirstBodyParagrah, 40);
+    // const title = await page.$eval('h1', title => title.textContent);
 
-  await browser.close();
+    const paragraphs = await page.$$eval('.article-content > p',
+      p => p.map(p => p.innerHTML)
+    );
 
-  return {
-    author: null,
-    title,
-    url,
-    description,
-    bodyContent: paragraphs,
-    publishedAt: null,
-    urlToImage: null,
-    source: null
+    const sanitzedFirstBodyParagrah = paragraphs[0].replace(/<[^>]*>?/gm, '');
+    const description = truncate(sanitzedFirstBodyParagrah, 40);
+
+    await browser.close();
+
+    return {
+      author: null,
+      title: null,
+      url,
+      description,
+      bodyContent: paragraphs,
+      publishedAt: null,
+      urlToImage: null,
+      source: null
+    }
+  } catch (error) {
+    console.error(error);
+    console.log('ERROR RECIEVED AT: ', url)
+    return {
+      author: null,
+      title: null,
+      url,
+      description: null,
+      bodyContent: null,
+      publishedAt: null,
+      urlToImage: null,
+      source: null
+    }
   }
 };
 

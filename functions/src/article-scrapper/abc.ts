@@ -5,7 +5,11 @@ import truncate from '../truncate';
 import { IArticle } from '../types';
 
 async function abcScrapper(url: string): Promise<IArticle> {
-  const browser = await puppeteer.launch({headless: true});
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+
   const page = await browser.newPage();
 
   // Configure the navigation timeout
