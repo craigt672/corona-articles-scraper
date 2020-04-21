@@ -17,8 +17,6 @@ async function wiredScrapper(url: string): Promise<IArticle> {
   
   await page.goto(url);
 
-  // const title = await page.$eval('h1',  title => title.textContent);
-
   const paragraphs = await page.$$eval('.article__body > p', 
     p => p.map(p => p.innerHTML)
   );
