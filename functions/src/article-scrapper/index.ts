@@ -1,3 +1,4 @@
+import * as functions from 'firebase-functions';
 import * as NewsAPI from 'newsapi';
 import * as dayjs from 'dayjs';
 
@@ -10,8 +11,8 @@ import techcrunchScrapper from './techcrunch';
 
 import { IArticle, IArticleExtractor } from '../types';
 
-const NEWS_TOPIC = 'coronavirus';
-const NEWS_API_KEY = '52339108ea7c4ba785ab195d44952c8e';
+const NEWS_TOPIC = functions.config().news_api.topic;
+const NEWS_API_KEY = functions.config().news_api.key;
 
 const newsapi = new NewsAPI(NEWS_API_KEY);
 
@@ -53,7 +54,6 @@ const articleExtractor: IArticleExtractor = (articleBaseUrl, articleData, scrapp
 
   return mappedArticles;
 }
-
 
 async function articleScrapper(url= 'https://www.nbcnews.com', source, scrapper) {
   const startTime = new Date().getTime();
